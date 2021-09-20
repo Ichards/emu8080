@@ -1,0 +1,305 @@
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+
+typedef unsigned char byte;
+
+using namespace std;
+
+void Disassemble(byte* p_iFile, int& p_pc, ofstream& p_oFile) {
+
+    byte* opCode = &p_iFile[p_pc];
+    int opBytes = 1;
+
+    p_oFile << hex << setw(4) << p_pc << " ";
+    p_oFile << setw(2) << static_cast<unsigned>(*opCode) << " " << dec;
+
+    switch (*opCode) {
+        case 0x00: p_oFile << "NOP" << endl; break;
+        case 0x01: p_oFile << "LXI  B," << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[01]) << endl; opBytes=3; break;
+        case 0x02: p_oFile << "STAX B" << endl; break;
+        case 0x03: p_oFile << "INX  B" << endl; break;
+        case 0x04: p_oFile << "INR  B" << endl; break;
+        case 0x05: p_oFile << "DCR  B" << endl; break;
+        case 0x06: p_oFile << "MVI  B," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x07: p_oFile << "RLC" << endl; break;
+        case 0x08: p_oFile << "-" << endl; break;
+        case 0x09: p_oFile << "DAD  B" << endl; break;
+        case 0x0a: p_oFile << "LDAX B" << endl; break;
+        case 0x0b: p_oFile << "DCX  B" << endl; break;
+        case 0x0c: p_oFile << "INR  C" << endl; break;
+        case 0x0d: p_oFile << "DCR  C" << endl; break;
+        case 0x0e: p_oFile << "MVI  C," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x0f: p_oFile << "RRC" << endl; break;
+        case 0x10: p_oFile << "-" << endl; break;
+        case 0x11: p_oFile << "LXI  D," << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes=3; break;
+        case 0x12: p_oFile << "STAX D" << endl; break;
+        case 0x13: p_oFile << "INX  D" << endl; break;
+        case 0x14: p_oFile << "INR  D" << endl; break;
+        case 0x15: p_oFile << "DCR  D" << endl; break;
+        case 0x16: p_oFile << "MVI  D," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x17: p_oFile << "RAL" << endl; break;
+        case 0x18: p_oFile << "-" << endl; break;
+        case 0x19: p_oFile << "DAD  D" << endl; break;
+        case 0x1a: p_oFile << "LDAX D" << endl; break;
+        case 0x1b: p_oFile << "DCX  D" << endl; break;
+        case 0x1c: p_oFile << "INR  E" << endl; break;
+        case 0x1d: p_oFile << "DCR  E" << endl; break;
+        case 0x1e: p_oFile << "MVI  E," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x1f: p_oFile << "RAR" << endl; break;
+        case 0x20: p_oFile << "-" << endl; break;
+        case 0x21: p_oFile << "LXI  H," << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x22: p_oFile << "SHLD " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x23: p_oFile << "INX  H" << endl; break;
+        case 0x24: p_oFile << "INR  H" << endl; break;
+        case 0x25: p_oFile << "DCR  H" << endl; break;
+        case 0x26: p_oFile << "MVI  H," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x27: p_oFile << "DAA" << endl; break;
+        case 0x28: p_oFile << "-" << endl; break;
+        case 0x29: p_oFile << "DAD  H" << endl; break;
+        case 0x2a: p_oFile << "LHLD " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x2b: p_oFile << "DCX  H" << endl; break;
+        case 0x2c: p_oFile << "INR  L" << endl; break;
+        case 0x2d: p_oFile << "DCR  L" << endl; break;
+        case 0x2e: p_oFile << "MVI  L," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x2f: p_oFile << "CMA" << endl; break;
+        case 0x30: p_oFile << "-" << endl; break;
+        case 0x31: p_oFile << "LXI  SP," << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x32: p_oFile << "STA  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x33: p_oFile << "INX  SP" << endl; break;
+        case 0x34: p_oFile << "INR  M" << endl; break;
+        case 0x35: p_oFile << "DCR  M" << endl; break;
+        case 0x36: p_oFile << "MVI  M," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x37: p_oFile << "STC" << endl; break;
+        case 0x38: p_oFile << "-" << endl; break;
+        case 0x39: p_oFile << "DAD  SP" << endl; break;
+        case 0x3a: p_oFile << "LDA  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0x3b: p_oFile << "DCX  SP" << endl; break;
+        case 0x3c: p_oFile << "INR  A" << endl; break;
+        case 0x3d: p_oFile << "DCR  A" << endl; break;
+        case 0x3e: p_oFile << "MVI  A," << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0x3f: p_oFile << "CMC" << endl; break;
+        case 0x40: p_oFile << "MOV  B,B" << endl; break;
+        case 0x41: p_oFile << "MOV  B,C" << endl; break;
+        case 0x42: p_oFile << "MOV  B,D" << endl; break;
+        case 0x43: p_oFile << "MOV  B,E" << endl; break;
+        case 0x44: p_oFile << "MOV  B,H" << endl; break;
+        case 0x45: p_oFile << "MOV  B,L" << endl; break;
+        case 0x46: p_oFile << "MOV  B,M" << endl; break;
+        case 0x47: p_oFile << "MOV  B,A" << endl; break;
+        case 0x48: p_oFile << "MOV  C,B" << endl; break;
+        case 0x49: p_oFile << "MOV  C,C" << endl; break;
+        case 0x4a: p_oFile << "MOV  C,D" << endl; break;
+        case 0x4b: p_oFile << "MOV  C,E" << endl; break;
+        case 0x4c: p_oFile << "MOV  C,H" << endl; break;
+        case 0x4d: p_oFile << "MOV  C,L" << endl; break;
+        case 0x4e: p_oFile << "MOV  C,M" << endl; break;
+        case 0x4f: p_oFile << "MOV  C,A" << endl; break;
+        case 0x50: p_oFile << "MOV  D,B" << endl; break;
+        case 0x51: p_oFile << "MOV  D,C" << endl; break;
+        case 0x52: p_oFile << "MOV  D,D" << endl; break;
+        case 0x53: p_oFile << "MOV  D,E" << endl; break;
+        case 0x54: p_oFile << "MOV  D,H" << endl; break;
+        case 0x55: p_oFile << "MOV  D,L" << endl; break;
+        case 0x56: p_oFile << "MOV  D,M" << endl; break;
+        case 0x57: p_oFile << "MOV  D,A" << endl; break;
+        case 0x58: p_oFile << "MOV  E,B" << endl; break;
+        case 0x59: p_oFile << "MOV  E,C" << endl; break;
+        case 0x5a: p_oFile << "MOV  E,D" << endl; break;
+        case 0x5b: p_oFile << "MOV  E,E" << endl; break;
+        case 0x5c: p_oFile << "MOV  E,H" << endl; break;
+        case 0x5d: p_oFile << "MOV  E,L" << endl; break;
+        case 0x5e: p_oFile << "MOV  E,M" << endl; break;
+        case 0x5f: p_oFile << "MOV  E,A" << endl; break;
+        case 0x60: p_oFile << "MOV  H,B" << endl; break;
+        case 0x61: p_oFile << "MOV  H,C" << endl; break;
+        case 0x62: p_oFile << "MOV  H,D" << endl; break;
+        case 0x63: p_oFile << "MOV  H,E" << endl; break;
+        case 0x64: p_oFile << "MOV  H,H" << endl; break;
+        case 0x65: p_oFile << "MOV  H,L" << endl; break;
+        case 0x66: p_oFile << "MOV  H,M" << endl; break;
+        case 0x67: p_oFile << "MOV  H,A" << endl; break;
+        case 0x68: p_oFile << "MOV  L,B" << endl; break;
+        case 0x69: p_oFile << "MOV  L,C" << endl; break;
+        case 0x6a: p_oFile << "MOV  L,D" << endl; break;
+        case 0x6b: p_oFile << "MOV  L,E" << endl; break;
+        case 0x6c: p_oFile << "MOV  L,H" << endl; break;
+        case 0x6d: p_oFile << "MOV  L,L" << endl; break;
+        case 0x6e: p_oFile << "MOV  L,M" << endl; break;
+        case 0x6f: p_oFile << "MOV  L,A" << endl; break;
+        case 0x70: p_oFile << "MOV  M,B" << endl; break;
+        case 0x71: p_oFile << "MOV  M,C" << endl; break;
+        case 0x72: p_oFile << "MOV  M,D" << endl; break;
+        case 0x73: p_oFile << "MOV  M,E" << endl; break;
+        case 0x74: p_oFile << "MOV  M,H" << endl; break;
+        case 0x75: p_oFile << "MOV  M,L" << endl; break;
+        case 0x76: p_oFile << "HLT" << endl; break;
+        case 0x77: p_oFile << "MOV  M,A" << endl; break;
+        case 0x78: p_oFile << "MOV  A,B" << endl; break;
+        case 0x79: p_oFile << "MOV  A,C" << endl; break;
+        case 0x7a: p_oFile << "MOV  A,D" << endl; break;
+        case 0x7b: p_oFile << "MOV  A,E" << endl; break;
+        case 0x7c: p_oFile << "MOV  A,H" << endl; break;
+        case 0x7d: p_oFile << "MOV  A,L" << endl; break;
+        case 0x7e: p_oFile << "MOV  A,M" << endl; break;
+        case 0x7f: p_oFile << "MOV  A,A" << endl; break;
+        case 0x80: p_oFile << "ADD  B" << endl; break;
+        case 0x81: p_oFile << "ADD  C" << endl; break;
+        case 0x82: p_oFile << "ADD  D" << endl; break;
+        case 0x83: p_oFile << "ADD  E" << endl; break;
+        case 0x84: p_oFile << "ADD  H" << endl; break;
+        case 0x85: p_oFile << "ADD  L" << endl; break;
+        case 0x86: p_oFile << "ADD  M" << endl; break;
+        case 0x87: p_oFile << "ADD  A" << endl; break;
+        case 0x88: p_oFile << "ADC  B" << endl; break;
+        case 0x89: p_oFile << "ADC  C" << endl; break;
+        case 0x8a: p_oFile << "ADC  D" << endl; break;
+        case 0x8b: p_oFile << "ADC  E" << endl; break;
+        case 0x8c: p_oFile << "ADC  H" << endl; break;
+        case 0x8d: p_oFile << "ADC  L" << endl; break;
+        case 0x8e: p_oFile << "ADC  M" << endl; break;
+        case 0x8f: p_oFile << "ADC  A" << endl; break;
+        case 0x90: p_oFile << "SUB  B" << endl; break;
+        case 0x91: p_oFile << "SUB  C" << endl; break;
+        case 0x92: p_oFile << "SUB  D" << endl; break;
+        case 0x93: p_oFile << "SUB  E" << endl; break;
+        case 0x94: p_oFile << "SUB  H" << endl; break;
+        case 0x95: p_oFile << "SUB  L" << endl; break;
+        case 0x96: p_oFile << "SUB  M" << endl; break;
+        case 0x97: p_oFile << "SUB  A" << endl; break;
+        case 0x98: p_oFile << "SBB  B" << endl; break;
+        case 0x99: p_oFile << "SBB  C" << endl; break;
+        case 0x9a: p_oFile << "SBB  D" << endl; break;
+        case 0x9b: p_oFile << "SBB  E" << endl; break;
+        case 0x9c: p_oFile << "SBB  H" << endl; break;
+        case 0x9d: p_oFile << "SBB  L" << endl; break;
+        case 0x9e: p_oFile << "SBB  M" << endl; break;
+        case 0x9f: p_oFile << "SBB  A" << endl; break;
+        case 0xa0: p_oFile << "ANA  B" << endl; break;
+        case 0xa1: p_oFile << "ANA  C" << endl; break;
+        case 0xa2: p_oFile << "ANA  D" << endl; break;
+        case 0xa3: p_oFile << "ANA  E" << endl; break;
+        case 0xa4: p_oFile << "ANA  H" << endl; break;
+        case 0xa5: p_oFile << "ANA  L" << endl; break;
+        case 0xa6: p_oFile << "ANA  M" << endl; break;
+        case 0xa7: p_oFile << "ANA  A" << endl; break;
+        case 0xa8: p_oFile << "XRA  B" << endl; break;
+        case 0xa9: p_oFile << "XRA  C" << endl; break;
+        case 0xaa: p_oFile << "XRA  D" << endl; break;
+        case 0xab: p_oFile << "XRA  E" << endl; break;
+        case 0xac: p_oFile << "XRA  H" << endl; break;
+        case 0xad: p_oFile << "XRA  L" << endl; break;
+        case 0xae: p_oFile << "XRA  M" << endl; break;
+        case 0xaf: p_oFile << "XRA  A" << endl; break;
+        case 0xb0: p_oFile << "ORA  B" << endl; break;
+        case 0xb1: p_oFile << "ORA  C" << endl; break;
+        case 0xb2: p_oFile << "ORA  D" << endl; break;
+        case 0xb3: p_oFile << "ORA  E" << endl; break;
+        case 0xb4: p_oFile << "ORA  H" << endl; break;
+        case 0xb5: p_oFile << "ORA  L" << endl; break;
+        case 0xb6: p_oFile << "ORA  M" << endl; break;
+        case 0xb7: p_oFile << "ORA  A" << endl; break;
+        case 0xb8: p_oFile << "CMP  B" << endl; break;
+        case 0xb9: p_oFile << "CMP  C" << endl; break;
+        case 0xba: p_oFile << "CMP  D" << endl; break;
+        case 0xbb: p_oFile << "CMP  E" << endl; break;
+        case 0xbc: p_oFile << "CMP  H" << endl; break;
+        case 0xbd: p_oFile << "CMP  L" << endl; break;
+        case 0xbe: p_oFile << "CMP  M" << endl; break;
+        case 0xbf: p_oFile << "CMP  A" << endl; break;
+        case 0xc0: p_oFile << "RNZ" << endl; break;
+        case 0xc1: p_oFile << "POP  B" << endl; break;
+        case 0xc2: p_oFile << "JNZ  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xc3: p_oFile << "JMP  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xc4: p_oFile << "CNZ  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xc5: p_oFile << "PUSH B" << endl; break;
+        case 0xc6: p_oFile << "ADI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xc7: p_oFile << "RST  0" << endl; break;
+        case 0xc8: p_oFile << "RZ" << endl; break;
+        case 0xc9: p_oFile << "RET" << endl; break;
+        case 0xca: p_oFile << "JZ   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xcb: p_oFile << "-" << endl; break;
+        case 0xcc: p_oFile << "CZ   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xcd: p_oFile << "CALL " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xce: p_oFile << "ACI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xcf: p_oFile << "RST  1" << endl; break;
+        case 0xd0: p_oFile << "RNC" << endl; break;
+        case 0xd1: p_oFile << "POP  D" << endl; break;
+        case 0xd2: p_oFile << "JNC  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xd3: p_oFile << "OUT  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xd4: p_oFile << "CNC  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xd5: p_oFile << "PUSH D" << endl; break;
+        case 0xd6: p_oFile << "SUI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xd7: p_oFile << "RST  2" << endl; break;
+        case 0xd8: p_oFile << "RC" << endl; break;
+        case 0xd9: p_oFile << "-" << endl; break;
+        case 0xda: p_oFile << "JC   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xdb: p_oFile << "IN   " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xdc: p_oFile << "CC   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xdd: p_oFile << "-" << endl; break;
+        case 0xde: p_oFile << "SBI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xdf: p_oFile << "RST  3" << endl; break;
+        case 0xe0: p_oFile << "RPO" << endl; break;
+        case 0xe1: p_oFile << "POP  H" << endl; break;
+        case 0xe2: p_oFile << "JPO  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xe3: p_oFile << "XTHL" << endl; break;
+        case 0xe4: p_oFile << "CPO  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xe5: p_oFile << "PUSH H" << endl; break;
+        case 0xe6: p_oFile << "ANI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xe7: p_oFile << "RST  4" << endl; break;
+        case 0xe8: p_oFile << "RPE" << endl; break;
+        case 0xe9: p_oFile << "PCHL" << endl; break;
+        case 0xea: p_oFile << "JPE  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xeb: p_oFile << "XCHG" << endl; break;
+        case 0xec: p_oFile << "CPE  " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xed: p_oFile << "-" << endl; break;
+        case 0xee: p_oFile << "XRI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xef: p_oFile << "RST  5" << endl; break;
+        case 0xf0: p_oFile << "RP" << endl; break;
+        case 0xf1: p_oFile << "POP PSW" << endl; break;
+        case 0xf2: p_oFile << "JP   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xf3: p_oFile << "DI" << endl; break;
+        case 0xf4: p_oFile << "CP   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xf5: p_oFile << "PUSH PSW" << endl; break;
+        case 0xf6: p_oFile << "ORI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xf7: p_oFile << "RST  6" << endl; break;
+        case 0xf8: p_oFile << "RM" << endl; break;
+        case 0xf9: p_oFile << "SPHL" << endl; break;
+        case 0xfa: p_oFile << "JM   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xfb: p_oFile << "EI" << endl; break;
+        case 0xfc: p_oFile << "CM   " << hex << setw(3) << static_cast<unsigned>(opCode[2]) << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 3; break;
+        case 0xfd: p_oFile << "-" << endl; break;
+        case 0xfe: p_oFile << "CPI  " << hex << setw(3) << static_cast<unsigned>(opCode[1]) << endl; opBytes = 2; break;
+        case 0xff: p_oFile << "RST  7" << endl; break;
+    }
+    p_pc += opBytes;
+}
+
+int main(int argc, const char* argv[]) {
+
+    ifstream ifile;
+    ifile.open(argv[1], ios::binary | ios::in);
+
+    ifile.seekg(0, ifile.end);
+    int fileSize = ifile.tellg();
+    ifile.seekg(0, ifile.beg);
+
+    char* fileScan = new char[fileSize];
+    
+    for (int i=0; i<fileSize; i++) {
+        ifile.read(&fileScan[i], 1);
+    }
+
+    ofstream ofile;
+    ofile.open(argv[2]);
+    int PC = 0;
+    while (PC < fileSize) {
+        Disassemble(reinterpret_cast<byte*>(fileScan), PC, ofile);
+    }
+
+    ofile.close();
+
+
+    return 0;
+}

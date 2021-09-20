@@ -1,0 +1,13 @@
+test 1:
+for the sub operation, i will test whether the added 1 to the inverted register
+is considered when setting the carry flags. to test this, i will set the A register
+to FF, and the B register to 00. i will call the sub on B, and B will be converted
+to FF, and then increment by one, going to 00. FF plus 00 produces no carries. however,
+FF plus one does. so if the flags come true, then we know the one is considered.
+result: the carry flag was false, but it's inversed in sub so it's true. the one is included
+in the carry.
+further testing with B - 240 and A - 0 reveals that the aux_carry considers the one. interesting....
+so, the one is definitely in consideration. now, the testing will reveal the nature of aux_carry.
+alright, the aux_carry works as you'd expect. 
+0000 0001
+0000 1110

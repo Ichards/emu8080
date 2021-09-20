@@ -1,0 +1,42 @@
+work on opcodes
+https://altairclone.com/downloads/manuals/8080%20Programmers%20Manual.pdf
+starting on around page 20 (15 in the scan) it goes through opcodes.
+definitely need to make a cohesive way of dealing with flags
+also, really need to figure out how to merge registers. hopefully i'm putting things in the right order
+
+this is a snippet of code from https://github.com/superzazu/8080/blob/master/i8080.c
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+static inline uint16_t i8080_get_bc(i8080* const c) {
+  return (c->b << 8) | c->c;
+}
+
+static inline uint16_t i8080_get_de(i8080* const c) {
+  return (c->d << 8) | c->e;
+}
+
+static inline uint16_t i8080_get_hl(i8080* const c) {
+  return (c->h << 8) | c->l;
+}
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+from this, it seems that the 16 bit register BC (which is just B and C combined) is combined with the B register being more significant.
+
+i had an idea about register M. maybe i could make it a byte pointer that's equal to memory* + address. i'm not sure if it's practical,
+but i think it'd be cleaner. maybe whenever the setHL function is called, it also changed the value of M? that would also need to apply
+to setting the H and L registers, but then those would have to be functions. maybe the values of the H and L registers are never modified
+independantly before reading M? I doubt it. anyways, the alternative to modifying the setHL function would be to make an updateM function,
+but that'd be ugly. for now i'll just stick to using the normal register-handling functions i always use.
+
+alright, i think i should make an add function for the registers
+^ on that note, i've taken a look at some more github code and have deduced the following...
+i should make a SZP flag setting function, and seperate aux_carry and carry functions. i'm still looking at it, but looking at the github code will be the biggest guide
+
+i've been lazy, but i have thought a tiny bit about the carry bit.
+during the addition of 2 numbers, get the ninth bit (probably operate on a 16 bit variable) and make the carry flag equal that. then let the actual result
+just equal the rest of the 8 bits. Simple!
+
+make a batch file and some code to test the opcodes for conveniance (make an assembly program using online resources and make use of em :D )
+https://eliben.org/js8080/
+
+so i've been implementing the arithmetic operations, and everything's gone well for the most part.
+however, the documentation doesn't seem very clear on what should constitute a carry. right now, i seperate
+each individual operation and include them all, but it's not clear if that's what it should do.
