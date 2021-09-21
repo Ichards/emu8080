@@ -8,8 +8,18 @@ class i8080 {
         word SP, PC;
 
         // flags
-        bool sign, zero, parity, carry, aux_carry;
-
+        byte flags;
+        void setSign(bool val);
+        bool getSign();
+        void setZero(bool val);
+        bool getZero();
+        void setAuxCarry(bool val);
+        bool getAuxCarry();
+        void setParity(bool val);
+        bool getParity();
+        void setCarry(bool val);
+        bool getCarry();
+        
         // memory
         byte* memory;
         int memorySize;
@@ -62,7 +72,8 @@ class i8080 {
         void RRC();
         void RAL();
         void RAR();
-
+        void PUSH(byte reg1, byte reg2);
+        void POP(byte reg);
 
     public:
         // constructor

@@ -4,7 +4,7 @@
 i8080::i8080(byte* p_memory, int p_memorySize)
 :
 A(0), B(0), C(0), D(0), E(0), H(0), L(0), SP(0), PC(0),
-sign(false), zero(false), parity(false), carry(false), aux_carry(false)
+flags(0b00000010)
 {
     memory = p_memory;
     memorySize = p_memorySize;
@@ -396,6 +396,45 @@ word i8080::readWord(word address) {
     return (readByte(address + 1) << 8) | readByte(address);
 }
 
+void i8080::setSign(bool val) {
+    flags = flags ^ (val << 7);
+}
+
+bool i8080::getSign() {
+    return (flags & 0b10000000);
+}
+
+void i8080::setZero(bool val) {
+    flags = flags ^ (val << 6);
+}
+
+bool i8080::getZero() {
+    return (flags & 0b01000000);
+}
+
+void i8080::setAuxCarry(bool val) {
+    flags = flags ^ (val << 4);
+}
+
+bool i8080::getAuxCarry() {
+    return (flags & 0b00010000);
+}
+
+void i8080::setParity(bool val) {
+    flags = flags ^ (val << 2);
+}
+
+bool i8080::getParity() {
+    return (flags & 0b00000100);
+}
+
+void i8080::setCarry(bool val) {
+    flags = flags ^ val;
+}
+
+bool i8080::getCarry() {
+    return (flags & 0b00000001);
+}
 
 void i8080::setSZP(byte value) {
     sign = (value >> 7);
@@ -406,6 +445,18 @@ void i8080::setSZP(byte value) {
         parity = !parity;
         value = value & (value - 1);
     }
+}
+
+byte i8080::getFlags() {
+    byte ret = 0;
+    ret = ret ^ (sign << 7);
+    ret = ret ^ (zero << 6);
+    ret = ret ^ (aux_carry << 4);
+    ret = ret ^ (parity << 2);
+    ret = ret ^ 0x02;
+    ret = ret ^ carry;
+
+    return ret;
 }
 
 bool i8080::setCarry(byte value, byte operand) {
@@ -605,6 +656,16 @@ void i8080::RAR() {
     carry = A & 0x01;
     A = A >> 1;
     A = A | temp;
+}
+
+void i8080::PUSH(byte reg1, byte reg2) {
+    memory[--SP] = reg1;
+    memory[--SP] = reg2;
+}
+
+void i8080::POP(byte& reg1, byte& reg2) {
+    reg2 = memory[SP];
+    reg1 = memory[SP+1];
 }
 
 void i8080::run() {
