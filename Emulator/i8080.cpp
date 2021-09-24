@@ -20,9 +20,9 @@ void i8080::execute(byte opCode) {
 
         // CARRY BIT
         // CMC - carry = !carry
-        case 0b00111111: carry = !carry; break;
+        case 0b00111111: setCarry(!getCarry()); break;
         // STC - carry = 1
-        case 0b00110111: carry = 1; break;
+        case 0b00110111: setCarry(true); break;
 
         // SINGLE REGISTER INSTRUCTIONS
         // INR - Increment Register or Memory
@@ -66,11 +66,11 @@ void i8080::execute(byte opCode) {
 
         // DAA - Decimal Adjust Accumulator
         case 0b00100111: 
-            if ( (A & 0x0F) > 9 || aux_carry) {
+            if ( (A & 0x0F) > 9 || getAuxCarry()) {
                 setAuxCarry(A, 6);
                 A += 6;
             }
-            if ( (A & 0xF0) > 9 || carry) {
+            if ( (A & 0xF0) > 9 || getCarry()) {
                 setCarry(A, 6);
                 A += 0x60;
             }
@@ -437,42 +437,31 @@ bool i8080::getCarry() {
 }
 
 void i8080::setSZP(byte value) {
-    sign = (value >> 7);
-    zero = (value == 0);
+    setSign(value >> 7);
+    setZero(value == 0);
     // ripped this from the internet
-    parity = 1;
+    setParity(true);
     while (value) {
-        parity = !parity;
+        setParity(!getParity());
         value = value & (value - 1);
     }
 }
 
-byte i8080::getFlags() {
-    byte ret = 0;
-    ret = ret ^ (sign << 7);
-    ret = ret ^ (zero << 6);
-    ret = ret ^ (aux_carry << 4);
-    ret = ret ^ (parity << 2);
-    ret = ret ^ 0x02;
-    ret = ret ^ carry;
-
-    return ret;
-}
 
 bool i8080::setCarry(byte value, byte operand) {
     // cast value to higher bit count variable
     short bigValue = value;
     bigValue += operand;
-    carry = bigValue >> 8;
-    return carry;
+    setCarry(bigValue >> 8);
+    return getCarry();
 }
 
 bool i8080::setAuxCarry(byte value, byte operand) {
     // get rid of the most significant 4 bits
     value = value & 0x0F;
     value += operand;
-    aux_carry = value >> 4;
-    return aux_carry;
+    setAuxCarry(value >> 4);
+    return getAuxCarry();
 }
 
 void i8080::setBC(word value) {
@@ -543,16 +532,16 @@ void i8080::ADC(byte reg) {
         tempCarry = true;
     }
     A += reg;
-    if (setAuxCarry(A, carry)) {
+    if (setAuxCarry(A, getCarry())) {
         tempAuxCarry = true;
     }
-    if (setCarry(A, carry)) {
+    if (setCarry(A, getCarry())) {
         tempCarry = true;
     }
-    A += carry;
+    A += getCarry();
     setSZP(A);
-    aux_carry = tempAuxCarry;
-    carry = tempCarry;
+    setAuxCarry(tempAuxCarry);
+    setCarry(tempCarry);
 }
 
 void i8080::SUB(byte reg) {
@@ -573,48 +562,48 @@ void i8080::SUB(byte reg) {
     
     A += reg;
     setSZP(A);
-    aux_carry = tempAuxCarry;
-    carry = tempCarry;
+    setAuxCarry(tempAuxCarry);
+    setCarry(tempCarry);
 }
 
 void i8080::SBB(byte reg) {
     bool tempAuxCarry = false;
     bool tempCarry = true;
-    if (setAuxCarry(reg, carry))
+    if (setAuxCarry(reg, getCarry()))
         tempAuxCarry = true;
-    if (setCarry(reg, carry))
+    if (setCarry(reg, getCarry()))
         tempCarry = false;
     
-    SUB(reg + carry);
-    if (aux_carry == false)
-        aux_carry = tempAuxCarry;
-    if (carry == true)
-        carry = tempCarry;
+    SUB(reg + getCarry());
+    if (getAuxCarry() == false)
+        setAuxCarry(tempAuxCarry);
+    if (getCarry() == true)
+        setCarry(tempCarry);
 }
 
 void i8080::ANA(byte& reg) {
-    carry = false;
+    setCarry(false);
     reg = reg & A;
     setSZP(reg);
 }
 
 void i8080::XRA(byte& reg) {
-    carry = false;
+    setCarry(false);
     // doesn't really say how to set aux_carry flag, so here's my logic:
     // if both registers are 1 at the 4th least significant bit, then it sets it. real simple :)
-    aux_carry = 1 == ((reg & 0x08) == (A & 0x08));
+    setAuxCarry(1 == ((reg & 0x08) == (A & 0x08)));
     reg = reg ^ A;
     setSZP(reg);
 }
 
 void i8080::ORA(byte& reg) {
-    carry = false;
+    setCarry(false);
     reg = reg | A;
     setSZP(reg);
 }
 
 void i8080::CMP(byte reg) {
-    zero = (reg == A);
+    setZero(reg == A);
 
     bool sameSign = true;
 
@@ -622,13 +611,13 @@ void i8080::CMP(byte reg) {
         sameSign = false;
     
     if (reg > A && sameSign)
-        carry = true;
+        setCarry(true);
     else
-        carry = false;
+        setCarry(false);
 }
 
 void i8080::RLC() {
-    carry = A >> 7;
+    setCarry(A >> 7);
     byte temp = A & 0x80;
     temp = temp >> 7;
     A = A << 1;
@@ -636,7 +625,7 @@ void i8080::RLC() {
 }
 
 void i8080::RRC() {
-    carry = A & 0x01;
+    setCarry(A & 0x01);
     byte temp = A & 0x01;
     temp = temp << 7;
     A = A >> 1;
@@ -644,16 +633,16 @@ void i8080::RRC() {
 }
 
 void i8080::RAL() {
-    byte temp = carry;
-    carry = A >> 7;
+    byte temp = getCarry();
+    setCarry(A >> 7);
     A = A << 1;
     A = A | temp;
 }
 
 void i8080::RAR() {
-    byte temp = carry;
+    byte temp = getCarry();
     temp = temp << 7;
-    carry = A & 0x01;
+    setCarry(A & 0x01);
     A = A >> 1;
     A = A | temp;
 }
@@ -672,4 +661,8 @@ void i8080::run() {
     while (PC < memorySize) {
         execute(readByte(PC++));
     }
+}
+
+void i8080::run() {
+    execute(readByte(PC++));
 }

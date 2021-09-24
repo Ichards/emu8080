@@ -73,7 +73,7 @@ class i8080 {
         void RAL();
         void RAR();
         void PUSH(byte reg1, byte reg2);
-        void POP(byte reg);
+        void POP(byte& reg1, byte& reg2);
 
     public:
         // constructor
@@ -81,8 +81,9 @@ class i8080 {
         // destructor
         ~i8080();
 
-        // start program
+        // run program
         void run();
+        void step();
 
         // debug function
         void printStats();
