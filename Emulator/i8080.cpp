@@ -663,6 +663,6 @@ void i8080::run() {
     }
 }
 
-void i8080::run() {
+void i8080::step() {
     execute(readByte(PC++));
 }
