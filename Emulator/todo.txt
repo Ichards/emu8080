@@ -40,3 +40,6 @@ https://eliben.org/js8080/
 so i've been implementing the arithmetic operations, and everything's gone well for the most part.
 however, the documentation doesn't seem very clear on what should constitute a carry. right now, i seperate
 each individual operation and include them all, but it's not clear if that's what it should do.
+
+made a testing method, and found out by increment wasn't working. went through some debugging annoyances, turns out the setParity function wasn't 
+removing the true when it was false. ugh.

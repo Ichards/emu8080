@@ -1,7 +1,14 @@
+extern "C" {
+#include "../TestEmulator/i8080.h"
+}
+#include <iostream>
+
+
 typedef unsigned char byte;
 typedef unsigned short int word;
 
-class i8080 {
+
+class intel8080 {
     private:
         // registers
         byte A, B, C, D, E, H, L;
@@ -77,15 +84,15 @@ class i8080 {
 
     public:
         // constructor
-        i8080(byte* p_memory, int p_memorySize);
+        intel8080(byte* p_memory, int p_memorySize);
         // destructor
-        ~i8080();
+        ~intel8080();
 
         // run program
         void run();
         void step();
 
-        // debug function
+        // debug functions
         void printStats();
-
+        bool compareCPU(i8080* testCpu);
 };

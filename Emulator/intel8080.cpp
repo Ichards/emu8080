@@ -1,7 +1,8 @@
-#include "i8080.h"
+#include "intel8080.h"
 
 
-i8080::i8080(byte* p_memory, int p_memorySize)
+
+intel8080::intel8080(byte* p_memory, int p_memorySize)
 :
 A(0), B(0), C(0), D(0), E(0), H(0), L(0), SP(0), PC(0),
 flags(0b00000010)
@@ -10,10 +11,10 @@ flags(0b00000010)
     memorySize = p_memorySize;
 }
 
-i8080::~i8080() {
+intel8080::~intel8080() {
 }
 
-void i8080::execute(byte opCode) {
+void intel8080::execute(byte opCode) {
 
     switch (opCode) {
         // this is where the fun begins
@@ -379,76 +380,85 @@ void i8080::execute(byte opCode) {
     }
 }
 
-void i8080::writeByte(word address, byte value) {
+void intel8080::writeByte(word address, byte value) {
     memory[address] = value;
 }
 
-byte i8080::readByte(word address) {
+byte intel8080::readByte(word address) {
     return memory[address];
 }
 
-void i8080::writeWord(word address, word value) {
+void intel8080::writeWord(word address, word value) {
     memory[address] = value << 8;
     memory[address + 1] = value & 0xFF;
 }
 
-word i8080::readWord(word address) {
+word intel8080::readWord(word address) {
     return (readByte(address + 1) << 8) | readByte(address);
 }
 
-void i8080::setSign(bool val) {
-    flags = flags ^ (val << 7);
+void intel8080::setSign(bool val) {
+    flags = flags | (val << 7);
 }
 
-bool i8080::getSign() {
+bool intel8080::getSign() {
     return (flags & 0b10000000);
 }
 
-void i8080::setZero(bool val) {
-    flags = flags ^ (val << 6);
+void intel8080::setZero(bool val) {
+    flags = flags | (val << 6);
 }
 
-bool i8080::getZero() {
+bool intel8080::getZero() {
     return (flags & 0b01000000);
 }
 
-void i8080::setAuxCarry(bool val) {
-    flags = flags ^ (val << 4);
+void intel8080::setAuxCarry(bool val) {
+    flags = flags | (val << 4);
 }
 
-bool i8080::getAuxCarry() {
+bool intel8080::getAuxCarry() {
     return (flags & 0b00010000);
 }
 
-void i8080::setParity(bool val) {
-    flags = flags ^ (val << 2);
+void intel8080::setParity(bool val) {
+    flags = flags & (255 - 4);
+    flags = flags | (val << 2);
 }
 
-bool i8080::getParity() {
+bool intel8080::getParity() {
     return (flags & 0b00000100);
 }
 
-void i8080::setCarry(bool val) {
-    flags = flags ^ val;
+void intel8080::setCarry(bool val) {
+    flags = flags | val;
 }
 
-bool i8080::getCarry() {
+bool intel8080::getCarry() {
     return (flags & 0b00000001);
 }
 
-void i8080::setSZP(byte value) {
+void intel8080::setSZP(byte value) {
     setSign(value >> 7);
     setZero(value == 0);
-    // ripped this from the internet
-    setParity(true);
-    while (value) {
-        setParity(!getParity());
-        value = value & (value - 1);
+    // my own method
+    byte val = 0x01;
+    int onesCount = 0;
+    for (int i=0; i<8; i++) {
+        if (val & value) {
+            onesCount++;
+        }
+        val = val << 1;
+    }
+    if (onesCount % 2 == 0) {
+        setParity(true);
+    } else {
+        setParity(false);
     }
 }
 
 
-bool i8080::setCarry(byte value, byte operand) {
+bool intel8080::setCarry(byte value, byte operand) {
     // cast value to higher bit count variable
     short bigValue = value;
     bigValue += operand;
@@ -456,7 +466,7 @@ bool i8080::setCarry(byte value, byte operand) {
     return getCarry();
 }
 
-bool i8080::setAuxCarry(byte value, byte operand) {
+bool intel8080::setAuxCarry(byte value, byte operand) {
     // get rid of the most significant 4 bits
     value = value & 0x0F;
     value += operand;
@@ -464,64 +474,64 @@ bool i8080::setAuxCarry(byte value, byte operand) {
     return getAuxCarry();
 }
 
-void i8080::setBC(word value) {
+void intel8080::setBC(word value) {
     B = value >> 8;
     C = value & 0xFF;
 }
 
-word i8080::getBC() {
+word intel8080::getBC() {
     return (B << 8) | C;
 }
 
-void i8080::setDE(word value) {
+void intel8080::setDE(word value) {
     D = value >> 8;
     E = value & 0xFF;
 }
 
-word i8080::getDE() {
+word intel8080::getDE() {
     return (D << 8) | E;
 }
 
-void i8080::setHL(word value) {
+void intel8080::setHL(word value) {
     H = value >> 8;
     L = value & 0xFF;
 }
 
-word i8080::getHL() {
+word intel8080::getHL() {
     return (H << 8) | L;
 }
 
-void i8080::setM(byte value) {
+void intel8080::setM(byte value) {
     writeByte(getHL(), value);
 }
 
-byte& i8080::getM() {
+byte& intel8080::getM() {
     return memory[getHL()]; // this will actually return a reference so operations can be performed on it
 }
 
-void i8080::INR(byte& reg) {
+void intel8080::INR(byte& reg) {
     setAuxCarry(reg, 1);
     reg += 1;
     setSZP(reg);
 }
 
-void i8080::DCR(byte& reg) {
+void intel8080::DCR(byte& reg) {
     setAuxCarry(reg, -1);
     reg -= 1;
     setSZP(reg);
 }
 
-void i8080::MOV(byte& dest, byte src) {
+void intel8080::MOV(byte& dest, byte src) {
     dest = src;
 }
 
-void i8080::ADD(byte reg) {
+void intel8080::ADD(byte reg) {
     setAuxCarry(A, reg);
     A += reg;
     setSZP(A);
 }
 
-void i8080::ADC(byte reg) {
+void intel8080::ADC(byte reg) {
     bool tempAuxCarry = false;
     bool tempCarry = false;
 
@@ -544,7 +554,7 @@ void i8080::ADC(byte reg) {
     setCarry(tempCarry);
 }
 
-void i8080::SUB(byte reg) {
+void intel8080::SUB(byte reg) {
     bool tempAuxCarry = false;
     bool tempCarry = true;
     
@@ -566,7 +576,7 @@ void i8080::SUB(byte reg) {
     setCarry(tempCarry);
 }
 
-void i8080::SBB(byte reg) {
+void intel8080::SBB(byte reg) {
     bool tempAuxCarry = false;
     bool tempCarry = true;
     if (setAuxCarry(reg, getCarry()))
@@ -581,13 +591,13 @@ void i8080::SBB(byte reg) {
         setCarry(tempCarry);
 }
 
-void i8080::ANA(byte& reg) {
+void intel8080::ANA(byte& reg) {
     setCarry(false);
     reg = reg & A;
     setSZP(reg);
 }
 
-void i8080::XRA(byte& reg) {
+void intel8080::XRA(byte& reg) {
     setCarry(false);
     // doesn't really say how to set aux_carry flag, so here's my logic:
     // if both registers are 1 at the 4th least significant bit, then it sets it. real simple :)
@@ -596,13 +606,13 @@ void i8080::XRA(byte& reg) {
     setSZP(reg);
 }
 
-void i8080::ORA(byte& reg) {
+void intel8080::ORA(byte& reg) {
     setCarry(false);
     reg = reg | A;
     setSZP(reg);
 }
 
-void i8080::CMP(byte reg) {
+void intel8080::CMP(byte reg) {
     setZero(reg == A);
 
     bool sameSign = true;
@@ -616,7 +626,7 @@ void i8080::CMP(byte reg) {
         setCarry(false);
 }
 
-void i8080::RLC() {
+void intel8080::RLC() {
     setCarry(A >> 7);
     byte temp = A & 0x80;
     temp = temp >> 7;
@@ -624,7 +634,7 @@ void i8080::RLC() {
     A = A | temp;
 }
 
-void i8080::RRC() {
+void intel8080::RRC() {
     setCarry(A & 0x01);
     byte temp = A & 0x01;
     temp = temp << 7;
@@ -632,14 +642,14 @@ void i8080::RRC() {
     A = A | temp;
 }
 
-void i8080::RAL() {
+void intel8080::RAL() {
     byte temp = getCarry();
     setCarry(A >> 7);
     A = A << 1;
     A = A | temp;
 }
 
-void i8080::RAR() {
+void intel8080::RAR() {
     byte temp = getCarry();
     temp = temp << 7;
     setCarry(A & 0x01);
@@ -647,22 +657,22 @@ void i8080::RAR() {
     A = A | temp;
 }
 
-void i8080::PUSH(byte reg1, byte reg2) {
+void intel8080::PUSH(byte reg1, byte reg2) {
     memory[--SP] = reg1;
     memory[--SP] = reg2;
 }
 
-void i8080::POP(byte& reg1, byte& reg2) {
+void intel8080::POP(byte& reg1, byte& reg2) {
     reg2 = memory[SP];
     reg1 = memory[SP+1];
 }
 
-void i8080::run() {
+void intel8080::run() {
     while (PC < memorySize) {
         execute(readByte(PC++));
     }
 }
 
-void i8080::step() {
+void intel8080::step() {
     execute(readByte(PC++));
 }
