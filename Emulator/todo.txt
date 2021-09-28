@@ -43,3 +43,5 @@ each individual operation and include them all, but it's not clear if that's wha
 
 made a testing method, and found out by increment wasn't working. went through some debugging annoyances, turns out the setParity function wasn't 
 removing the true when it was false. ugh.
+
+testing: got inr and dcr to work, fixed the aux_carry method, might need to use the algorithm on carry, currently DAA (0b00100111) doesn't work.

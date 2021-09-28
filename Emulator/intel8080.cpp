@@ -398,6 +398,7 @@ word intel8080::readWord(word address) {
 }
 
 void intel8080::setSign(bool val) {
+    flags = flags & (255 - 128);
     flags = flags | (val << 7);
 }
 
@@ -406,6 +407,7 @@ bool intel8080::getSign() {
 }
 
 void intel8080::setZero(bool val) {
+    flags = flags & (255 - 64);
     flags = flags | (val << 6);
 }
 
@@ -414,6 +416,7 @@ bool intel8080::getZero() {
 }
 
 void intel8080::setAuxCarry(bool val) {
+    flags = flags & (255 - 16);
     flags = flags | (val << 4);
 }
 
@@ -431,6 +434,7 @@ bool intel8080::getParity() {
 }
 
 void intel8080::setCarry(bool val) {
+    flags = flags & (255 - 1);
     flags = flags | val;
 }
 
@@ -457,7 +461,6 @@ void intel8080::setSZP(byte value) {
     }
 }
 
-
 bool intel8080::setCarry(byte value, byte operand) {
     // cast value to higher bit count variable
     short bigValue = value;
@@ -467,10 +470,44 @@ bool intel8080::setCarry(byte value, byte operand) {
 }
 
 bool intel8080::setAuxCarry(byte value, byte operand) {
-    // get rid of the most significant 4 bits
-    value = value & 0x0F;
-    value += operand;
-    setAuxCarry(value >> 4);
+
+    bool previousCarry = false;
+    for (int i=0; i<4; i++) {
+        // Clear bits to the left
+        byte tempVal = value << (7 - i);
+        tempVal = tempVal >> (7 - i);
+        // Clear bits to the right
+        tempVal = tempVal >> i;
+        // Rinse and repeat
+        byte tempOperand = operand << (7 - i);
+        tempOperand = tempOperand >> (7 - i);
+        tempOperand = tempOperand >> i;
+
+        int val = 0;
+        if (tempVal > 0) {
+            val++;
+        }
+        if (tempOperand > 0) {
+            val++;
+        }
+        if (previousCarry) {
+            val++;
+        }
+
+        // if it's the 4th iteration, set aux_carry
+        if (i == 3) {
+            setAuxCarry(val >= 2);
+        }
+
+        if (val >= 2) {
+            previousCarry = true;
+        } else {
+            previousCarry = false;
+        }
+
+    }
+
+
     return getAuxCarry();
 }
 

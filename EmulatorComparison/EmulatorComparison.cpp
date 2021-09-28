@@ -126,7 +126,7 @@ void testCPU(byte* program, int programSize) {
 
 int main() {
 
-    byte program[] = {0b00000100, 0b00000100, 0b00000100, 0b00000100}; // increment b 4 times
+    byte program[] = {0b00100111}; // increment b 4 times
 
     int programSize = *(&program + 1) - program;
 
