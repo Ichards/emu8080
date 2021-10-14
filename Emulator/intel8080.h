@@ -10,6 +10,9 @@ typedef unsigned short int word;
 
 class intel8080 {
     private:
+        // Halt
+        bool halt;
+
         // registers
         byte A, B, C, D, E, H, L;
         word SP, PC;
@@ -46,6 +49,7 @@ class intel8080 {
         void setSZP(byte value);
         // carry
         bool setCarry(byte value, byte addend); // assuming the value being operated upon is a byte, hope the assumption works out :^|
+        bool setCarryWord(word value, word addend);
         // aux carry
         bool setAuxCarry(byte value, byte addend);
         
@@ -81,6 +85,17 @@ class intel8080 {
         void RAR();
         void PUSH(byte reg1, byte reg2);
         void POP(byte& reg1, byte& reg2);
+        void DAD(word regs);
+        void MVI(byte& reg);
+        void ADI();
+        void ACI();
+        void SUI();
+        void SBI();
+        void ANI();
+        void XRI();
+        void ORI();
+        void CPI();
+        void STA();
 
     public:
         // constructor

@@ -33,37 +33,37 @@ bool intel8080::compareCPU(i8080* testCpu) {
     bool success = true;
     if (B != testCpu->B) {
         cout << "B registers are different" << endl;
-        cout << "MyCpu:\t" << B << "\tTestCpu:\t" << testCpu->B << endl;
+        cout << "MyCpu:\t" << (int)B << "\tTestCpu:\t" << testCpu->B << endl;
         success = false;
     }
     if (C != testCpu->C) {
         cout << "C registers are different" << endl;
-        cout << "MyCpu:\t" << C << "\tTestCpu:\t" << testCpu->C << endl;
+        cout << "MyCpu:\t" << (int)C << "\tTestCpu:\t" << testCpu->C << endl;
         success = false;
     }
     if (D != testCpu->D) {
         cout << "D registers are different" << endl;
-        cout << "MyCpu:\t" << D << "\tTestCpu:\t" << testCpu->D << endl;
+        cout << "MyCpu:\t" << (int)D << "\tTestCpu:\t" << testCpu->D << endl;
         success = false;
     }
     if (E != testCpu->E) {
         cout << "E registers are different" << endl;
-        cout << "MyCpu:\t" << E << "\tTestCpu:\t" << testCpu->E << endl;
+        cout << "MyCpu:\t" << (int)E << "\tTestCpu:\t" << testCpu->E << endl;
         success = false;
     }
     if (H != testCpu->H) {
         cout << "H registers are different" << endl;
-        cout << "MyCpu:\t" << H << "\tTestCpu:\t" << testCpu->H << endl;
+        cout << "MyCpu:\t" << (int)H << "\tTestCpu:\t" << testCpu->H << endl;
         success = false;
     }
     if (L != testCpu->L) {
         cout << "L registers are different" << endl;
-        cout << "MyCpu:\t" << L << "\tTestCpu:\t" << testCpu->L << endl;
+        cout << "MyCpu:\t" << (int)L << "\tTestCpu:\t" << testCpu->L << endl;
         success = false;
     }
     if (A != testCpu->A) {
         cout << "A registers are different" << endl;
-        cout << "MyCpu:\t" << A << "\tTestCpu:\t" << testCpu->A << endl;
+        cout << "MyCpu:\t" << (int)A << "\tTestCpu:\t" << testCpu->A << endl;
         success = false;
     }
     if (SP != testCpu->SP) {
@@ -126,7 +126,7 @@ void testCPU(byte* program, int programSize) {
 
 int main() {
 
-    byte program[] = {0b00100111}; // increment b 4 times
+    byte program[] = {0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b10111000};
 
     int programSize = *(&program + 1) - program;
 

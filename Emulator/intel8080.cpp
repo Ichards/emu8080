@@ -4,6 +4,7 @@
 
 intel8080::intel8080(byte* p_memory, int p_memorySize)
 :
+halt(false),
 A(0), B(0), C(0), D(0), E(0), H(0), L(0), SP(0), PC(0),
 flags(0b00000010)
 {
@@ -70,10 +71,12 @@ void intel8080::execute(byte opCode) {
             if ( (A & 0x0F) > 9 || getAuxCarry()) {
                 setAuxCarry(A, 6);
                 A += 6;
+                setSZP(A);
             }
             if ( (A & 0xF0) > 9 || getCarry()) {
                 setCarry(A, 6);
                 A += 0x60;
+                setSZP(A);
             }
             break;
 
@@ -376,7 +379,87 @@ void intel8080::execute(byte opCode) {
         // Register A
         case 0b10111111: CMP(A); break;
 
-        
+        // ROTATE ACCUMULATOR INSTRUCTIONS
+        // RLC - Rotate Accumulator Left
+        case 0b00000111: RLC(); break;
+        // RRC - Rotate Accumulator Right
+        case 0b00001111: RRC(); break;
+        // RAL - Rotate Accumulator Left Through Carry
+        case 0b00010111: RAL(); break;
+        // RAR - Rotate Accumulator Right Through Carry
+        case 0b00011111: RAR(); break;
+
+        // REGISTER PAIR INSTRUCTIONS
+        // PUSH - Push Data Onto Stack
+        // Registers BC
+        case 0b11000101: PUSH(B, C); break;
+        // Registers DE
+        case 0b11010101: PUSH(D, E); break;
+        // Registers HL
+        case 0b11100101: PUSH(H, L); break;
+        // Registers flags+A
+        case 0b11110101: PUSH(flags, A); break;
+
+        // POP - Pop Data Off Stack
+        // Registers BC
+        case 0b11000001: POP(B, C); break;
+        // Registers DE
+        case 0b11010001: POP(D, E); break;
+        // Registers HL
+        case 0b11100001: POP(H, L); break;
+        // Registers flags+A
+        case 0b11110001: POP(flags, A); break;
+
+        // DAD - Double Add
+        // Registers BC
+        case 0b00001001: DAD(getBC()); break;
+        // Registers DE
+        case 0b00011001: DAD(getDE()); break;
+        // Registers HL
+        case 0b00101001: DAD(getHL()); break;
+        // Registers SP
+        case 0b00111001: DAD(SP); break;
+
+        // INX - Increment Register Pair
+        // Registers BC
+        case 0b00000011: setBC(getBC() + 1); break;
+        // Registers DE
+        case 0b00010011: setDE(getDE() + 1); break;
+        // Registers HL
+        case 0b00100011: setHL(getHL() + 1); break;
+        // Registers SP
+        case 0b00110011: SP++; break;
+
+        // DCX - Decrement Register Pair
+        // Registers BC
+        case 0b00001011: setBC(getBC() - 1); break;
+        // Registers DE
+        case 0b00011011: setDE(getDE() - 1); break;
+        // Registers HL
+        case 0b00101011: setHL(getHL() - 1); break;
+        // Registers SP
+        case 0b00111011: SP--; break;
+
+        // XCHG - Exchange Registers
+        case 0b11101011:
+        word temp = getHL();
+        setHL(getDE());
+        setDE(temp);
+        break;
+
+        // XTHL - Exchange Stack
+        case 0b11100011:
+        L = memory[SP];
+        H = memory[SP+1];
+        break;
+
+        // SPHL - Load SP From H And L
+        case 0b11111001:
+        SP - getHL();
+        break;
+
+        // IMMEDIATE INSTRUCTIONS
+
     }
 }
 
@@ -466,6 +549,14 @@ bool intel8080::setCarry(byte value, byte operand) {
     short bigValue = value;
     bigValue += operand;
     setCarry(bigValue >> 8);
+    return getCarry();
+}
+
+bool intel8080::setCarry(byte value, byte operand) {
+    // cast value to higher bit count variable
+    unsigned long int bigValue = value;
+    bigValue += operand;
+    setCarry(bigValue >> 16);
     return getCarry();
 }
 
@@ -614,6 +705,9 @@ void intel8080::SUB(byte reg) {
 }
 
 void intel8080::SBB(byte reg) {
+
+    bool previousCarry = getCarry();
+
     bool tempAuxCarry = false;
     bool tempCarry = true;
     if (setAuxCarry(reg, getCarry()))
@@ -621,7 +715,7 @@ void intel8080::SBB(byte reg) {
     if (setCarry(reg, getCarry()))
         tempCarry = false;
     
-    SUB(reg + getCarry());
+    SUB(reg + previousCarry);
     if (getAuxCarry() == false)
         setAuxCarry(tempAuxCarry);
     if (getCarry() == true)
@@ -630,37 +724,31 @@ void intel8080::SBB(byte reg) {
 
 void intel8080::ANA(byte& reg) {
     setCarry(false);
-    reg = reg & A;
-    setSZP(reg);
+    A = reg & A;
+    setSZP(A);
 }
 
 void intel8080::XRA(byte& reg) {
     setCarry(false);
-    // doesn't really say how to set aux_carry flag, so here's my logic:
-    // if both registers are 1 at the 4th least significant bit, then it sets it. real simple :)
-    setAuxCarry(1 == ((reg & 0x08) == (A & 0x08)));
-    reg = reg ^ A;
-    setSZP(reg);
+    // turns out, the aux carry flag is just reset to 0. simple :)
+    setAuxCarry(false);
+    A = reg ^ A;
+    setSZP(A);
 }
 
 void intel8080::ORA(byte& reg) {
     setCarry(false);
-    reg = reg | A;
-    setSZP(reg);
+    A = reg | A;
+    setSZP(A);
 }
 
 void intel8080::CMP(byte reg) {
-    setZero(reg == A);
 
-    bool sameSign = true;
+    reg = (~reg) + 1;
 
-    if ((reg >> 7) != (A >> 7))
-        sameSign = false;
-    
-    if (reg > A && sameSign)
-        setCarry(true);
-    else
-        setCarry(false);
+    setSZP(A + reg);
+    setCarry(!setCarry(A, reg));
+    setAuxCarry(A, reg);
 }
 
 void intel8080::RLC() {
@@ -704,11 +792,125 @@ void intel8080::POP(byte& reg1, byte& reg2) {
     reg1 = memory[SP+1];
 }
 
+void intel8080::DAD(word regs) {
+    setHL(getHL() + regs);
+    setCarryWord(getHL(), regs);
+}
+
+void intel8080::MVI(byte& reg) {
+    reg = memory[++PC];
+}
+
+void intel8080::ADI() {
+    PC++;
+    setCarry(A, memory[PC]);
+    setAuxCarry(A, memory[PC]);
+    A += memory[PC];
+    setSZP(A);
+}
+
+void intel8080::ACI() {
+    bool tempAuxCarry = false;
+    bool tempCarry = false;
+
+    PC++;
+
+    if (setAuxCarry(A, memory[PC])) {
+        tempAuxCarry = true;
+    }
+    if (setCarry(A, memory[PC])) {
+        tempCarry = true;
+    }
+    A += memory[PC];
+    if (setAuxCarry(A, getCarry())) {
+        tempAuxCarry = true;
+    }
+    if (setCarry(A, getCarry())) {
+        tempCarry = true;
+    }
+    A += getCarry();
+    setSZP(A);
+    setAuxCarry(tempAuxCarry);
+    setCarry(tempCarry);
+}
+
+void intel8080::SUI() {
+    PC++;
+    setCarry(A, (~memory[PC]) + 1);
+    setAuxCarry(A, (~memory[PC]) + 1);
+    A += (~memory[PC]) + 1;
+    setSZP(A);
+}
+
+void intel8080::SBI() {
+    bool tempAuxCarry = false;
+    bool tempCarry = false;
+
+    PC++;
+
+    if (setAuxCarry(A, (~memory[PC]) + 1)) {
+        tempAuxCarry = true;
+    }
+    if (setCarry(A, (~memory[PC]) + 1)) {
+        tempCarry = true;
+    }
+    A += (~memory[PC]) + 1;
+    if (setAuxCarry(A, getCarry())) {
+        tempAuxCarry = true;
+    }
+    if (setCarry(A, getCarry())) {
+        tempCarry = true;
+    }
+    A += (~getCarry()) + 1;
+    setSZP(A);
+    setAuxCarry(tempAuxCarry);
+    setCarry(tempCarry);
+}
+
+void intel8080::ANI() {
+    setCarry(false);
+    A = A & memory[++PC];
+    setSZP(A);
+}
+
+void intel8080::XRI() {
+    setCarry(false);
+    A = A ^ memory[++PC];
+    setSZP(A);
+}
+
+void intel8080::ORI() {
+    setCarry(false);
+    A = A | memory[++PC];
+    setSZP(A);
+}
+
+void intel8080::CPI() {
+
+    PC++;
+    byte temp = memory[PC] = (~memory[PC]) + 1;
+
+    setSZP(A + memory[PC]);
+    setCarry(!setCarry(A, memory[PC]));
+    setAuxCarry(A, memory[PC]);
+}
+
+void intel8080::STA() {
+    word address;
+    address = memory[PC+2];
+    address = address << 8;
+    address = address | memory[PC+1];
+    memory[address] = A;
+    PC += 2;
+}
+
 void intel8080::run() {
     while (PC < memorySize) {
         execute(readByte(PC++));
     }
 }
+
+
 
 void intel8080::step() {
     execute(readByte(PC++));
