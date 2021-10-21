@@ -108,12 +108,19 @@ void testCPU(byte* program, int programSize) {
     }
 
     intel8080* myCpu = new intel8080(program, programSize);
-    myCpu->run();
 
-    myCpu->printStats();
-    printi8080Stats(testCpu);
+    bool success = true;
+    for (int i=0; i<programSize; i++) {
+        i8080_step(testCpu);
+        myCpu->step();
+        if (!myCpu->compareCPU(testCpu)) {
+            success = false;
+            break;
+        }
+    }
 
-    if (myCpu->compareCPU(testCpu)) {
+
+    if (success) {
         cout << "CPU meets the standard" << endl;
     } else {
         cout << "CPU fails to meet the standard" << endl;
@@ -123,6 +130,7 @@ void testCPU(byte* program, int programSize) {
     delete myCpu;
 
 }
+
 
 int main() {
 

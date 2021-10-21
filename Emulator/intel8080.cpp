@@ -904,6 +904,35 @@ void intel8080::STA() {
     PC += 2;
 }
 
+void intel8080::LDA() {
+    word address;
+    address = memory[PC+2];
+    address = address << 8;
+    address = address | memory[PC+1];
+    A = memory[address];
+    PC += 2;
+}
+
+void intel8080::SHLD() {
+    word address;
+    address = memory[PC+2];
+    address = address << 8;
+    address = address | memory[PC+1];
+    memory[address] = L;
+    memory[address+1] = H;
+    PC += 2;
+}
+
+void intel8080::LHLD() {
+    word address;
+    address = memory[PC+2];
+    address = address << 8;
+    address = address | memory[PC+1];
+    L = memory[address];
+    H = memory[address+1];
+    PC += 2;
+}
+
 void intel8080::run() {
     while (PC < memorySize) {
         execute(readByte(PC++));

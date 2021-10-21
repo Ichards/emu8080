@@ -96,6 +96,9 @@ class intel8080 {
         void ORI();
         void CPI();
         void STA();
+        void LDA();
+        void SHLD();
+        void LHLD();
 
     public:
         // constructor
