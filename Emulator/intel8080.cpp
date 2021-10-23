@@ -459,7 +459,90 @@ void intel8080::execute(byte opCode) {
         break;
 
         // IMMEDIATE INSTRUCTIONS
+        // MVI - Move Immediate Data
+        // Register B
+        case 0b00000110: MVI(B); break;
+        // Register C
+        case 0b00001110: MVI(C); break;
+        // Register D
+        case 0b00010110: MVI(D); break;
+        // Register E
+        case 0b00011110: MVI(E); break;
+        // Register H
+        case 0b00100110: MVI(H); break;
+        // Register L
+        case 0b00101110: MVI(L); break;
+        // Register M
+        case 0b00110110: MVI(getM()); break;
+        // Register A
+        case 0b00111110: MVI(A); break;
 
+        // ADI - Add Immediate To Accumulator
+        case 0b11000110: ADI(); break;
+
+        // ACI - Add Immediate To Accumulator With Carry
+        case 0b11001110: ACI(); break;
+
+        // SUI - Subtract Immediate From Accumulator
+        case 0b11010110: SUI(); break;
+
+        // SBI - Subtract Immediate from Accumulator With Borrow
+        case 0b11011110: SBI(); break;
+
+        // ANI - And Immediate With Accumulator
+        case 0b11100110: ANI(); break;
+
+        // XRI - Exclusive-Or Immediate With Accumulator
+        case 0b11101110: XRI(); break;
+
+        // ORI - Or Immediate With Accumulator
+        case 0b11110110: ORI(); break;
+
+        // CPI - Compare Immediate With Accumulator
+        case 0b11111110: CPI(); break;
+
+        // STA - Store Accumulator Direct
+        case 0b00110010: STA(); break;
+
+        // LDA - Load Accumulator Direct
+        case 0b00111010: LDA(); break;
+
+        // SHLD - Store H and L Direct
+        case 0b00100010: SHLD(); break;
+
+        // LHLD - Load H And L Direct
+        case 0b00101010: LHLD(); break;
+
+        // JUMP INSTRUCTIONS
+        // PCHL - Load Program Counter
+        case 0b11101001: PCHL(); break;
+
+        // JMP - JUMP
+        case 0b11000011: JMP(); break;
+
+        // JC - Jump If Carry
+        case 0b11011010: JC(); break;
+
+        // JNC - Jump If No Carry
+        case 0b11010010: JNC(); break;
+
+        // JZ - Jump If Zero
+        case 0b11001010: JZ(); break;
+
+        // JNZ - Jump If Not Zero
+        case 0b11000010: JNZ(); break;
+
+        // JM - Jump If Minus
+        case 0b11111010: JM(); break;
+
+        // JP - Jump If Positive
+        case 0b11110010: JP(); break;
+
+        // JPE - Jump If Parity Even
+        case 0b11101010: JPE(); break;
+
+        // JPO - Jump If Parity Odd
+        case 0b11100010: JPO(); break;
     }
 }
 
@@ -931,6 +1014,91 @@ void intel8080::LHLD() {
     L = memory[address];
     H = memory[address+1];
     PC += 2;
+}
+
+void intel8080::PCHL() {
+    PC = PC & 0xFF;
+    PC = PC | (H << 8);
+    PC = PC | L;
+}
+
+void intel8080::JMP() {
+    word address = 0;
+    address = address | memory[PC+1];
+    address = address | (memory[PC+2] << 8);
+    PC = address;
+}
+
+void intel8080::JC() {
+    if (getCarry()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JNC() {
+    if (!getCarry()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JZ() {
+    if (getZero()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JNZ() {
+    if (!getZero()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JM() {
+    if (getSign()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JP() {
+    if (!getSign()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JPE() {
+    if (getParity()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
+}
+
+void intel8080::JPO() {
+    if (!getParity()) {
+        word address = 0;
+        address = address | memory[PC+1];
+        address = address | (memory[PC+2] << 8);
+        PC = address;
+    }
 }
 
 void intel8080::run() {

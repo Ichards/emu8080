@@ -99,6 +99,16 @@ class intel8080 {
         void LDA();
         void SHLD();
         void LHLD();
+        void PCHL();
+        void JMP();
+        void JC();
+        void JNC();
+        void JZ();
+        void JNZ();
+        void JM();
+        void JP();
+        void JPE();
+        void JPO();
 
     public:
         // constructor
