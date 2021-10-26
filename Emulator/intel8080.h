@@ -130,8 +130,8 @@ class intel8080 {
         void RST(byte exp);
         void EI();
         void DI();
-        void IN(byte exp);
-        void OUT(byte exp);
+        void IN();
+        void OUT();
         void HLT();
 
 

@@ -200,8 +200,8 @@ void intel8080::execute(byte opCode) {
         case 0b01110100: MOV(getM(), H); break;
         // L source
         case 0b01110101: MOV(getM(), L); break;
-        // M source
-        case 0b01110110: MOV(getM(), getM()); break;
+        // M source - This code is reserved for HLT (line ~628)
+        //case 0b01110110: MOV(getM(), getM()); break;
         // A source
         case 0b01110111: MOV(getM(), A); break;
         // A destination
@@ -543,6 +543,89 @@ void intel8080::execute(byte opCode) {
 
         // JPO - Jump If Parity Odd
         case 0b11100010: JPO(); break;
+
+        // CALL SUBROUTINE INSTRUCTIONS
+        // CALL - Call
+        case 0b11001101: CALL(); break;
+
+        // CC - Call If Carry
+        case 0b11011100: CC(); break;
+
+        // CNC - Call If No Carry
+        case 0b11010100: CNC(); break;
+
+        // CZ - Call If Zero
+        case 0b11001100: CZ(); break;
+
+        // CNZ - Call If Not Zero
+        case 0b11000100: CNZ(); break;
+
+        // CM - Call If Minus
+        case 0b11111100: CM(); break;
+
+        // CP - Call If Plus
+        case 0b11110100: CP(); break;
+
+        // CPE - Call If Parity Even
+        case 0b11101100: CPE(); break;
+
+        // CPO - Call If Parity Odd
+        case 0b11100100: CPO(); break;
+
+        // RETURN FROM SUBROUTINE INSTRUCTIONS
+        // RET - Return
+        case 0b11001001: RET(); break;
+
+        // RC - Return If Carry
+        case 0b11011000: RC(); break;
+
+        // RNC - Return If No Carry
+        case 0b11010000: RNC(); break;
+
+        // RZ - Return If Zero
+        case 0b11001000: RZ(); break;
+
+        // RNZ - Return If Not Zero
+        case 0b11000000: RNZ(); break;
+
+        // RM - Return If Minus
+        case 0b11111000: RM(); break;
+
+        // RP - Return If Plus
+        case 0b11110000: RP(); break;
+
+        // RPE - Return If Parity Even
+        case 0b11101000: RPE(); break;
+
+        // RPO - Return If Parity Odd
+        case 0b11100000: RPO(); break;
+
+        // RST - Restart
+        case 0b11000111: RST(0b000); break;
+        case 0b11001111: RST(0b001); break;
+        case 0b11010111: RST(0b010); break;
+        case 0b11011111: RST(0b011); break;
+        case 0b11100111: RST(0b100); break;
+        case 0b11101111: RST(0b101); break;
+        case 0b11110111: RST(0b110); break;
+        case 0b11111111: RST(0b111); break;
+
+        // INTERRUPT FLIP-FLOP INSTRUCTIONS
+        // EI - Enable Interrupts
+        case 0b11111011: EI(); break;
+
+        // DI - Disable Interrupts
+        case 0b11110011: DI(); break;
+
+        // INPUT/OUTPUT INSTRUCTIONS
+        // IN - Input
+        case 0b11011011: IN(); break;
+
+        // OUT - Output
+        case 0b11010011: OUT(); break;
+
+        // HLT - HALT INSTRUCTION
+        case 0b01110110: HLT(); break;
     }
 }
 
@@ -1197,12 +1280,12 @@ void intel8080::DI() {
     INTE = false;
 }
 
-void intel8080::IN(byte exp) {
-    
+void intel8080::IN() {
+    byte dev = memory[++PC];
 }
 
-void intel8080::OUT(byte exp) {
-    
+void intel8080::OUT() {
+    byte dev = memory[++PC];
 }
 
 void intel8080::HLT() {
