@@ -4,7 +4,7 @@
 
 intel8080::intel8080(byte* p_memory, int p_memorySize)
 :
-halt(false),
+halt(false), INTE(false),
 A(0), B(0), C(0), D(0), E(0), H(0), L(0), SP(0), PC(0),
 flags(0b00000010)
 {
@@ -1181,6 +1181,32 @@ void intel8080::RPO() {
     if (!getParity()) {
         RET();
     }
+}
+
+void intel8080::RST(byte exp) {
+    memory[--SP] = PC;
+    word address = exp << 3;
+    PC = address;
+}
+
+void intel8080::EI() {
+    INTE = true;
+}
+
+void intel8080::DI() {
+    INTE = false;
+}
+
+void intel8080::IN(byte exp) {
+    
+}
+
+void intel8080::OUT(byte exp) {
+    
+}
+
+void intel8080::HLT() {
+    halt = true;
 }
 
 void intel8080::run() {

@@ -10,8 +10,8 @@ typedef unsigned short int word;
 
 class intel8080 {
     private:
-        // Halt
-        bool halt;
+        // Halt and INTE
+        bool halt, INTE;
 
         // registers
         byte A, B, C, D, E, H, L;
@@ -127,6 +127,13 @@ class intel8080 {
         void RP();
         void RPE();
         void RPO();
+        void RST(byte exp);
+        void EI();
+        void DI();
+        void IN(byte exp);
+        void OUT(byte exp);
+        void HLT();
+
 
     public:
         // constructor
