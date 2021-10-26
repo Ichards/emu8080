@@ -873,6 +873,7 @@ void intel8080::PUSH(byte reg1, byte reg2) {
 void intel8080::POP(byte& reg1, byte& reg2) {
     reg2 = memory[SP];
     reg1 = memory[SP+1];
+    SP += 2;
 }
 
 void intel8080::DAD(word regs) {
@@ -1031,73 +1032,154 @@ void intel8080::JMP() {
 
 void intel8080::JC() {
     if (getCarry()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JNC() {
     if (!getCarry()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JZ() {
     if (getZero()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JNZ() {
     if (!getZero()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JM() {
     if (getSign()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JP() {
     if (!getSign()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JPE() {
     if (getParity()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
     }
 }
 
 void intel8080::JPO() {
     if (!getParity()) {
-        word address = 0;
-        address = address | memory[PC+1];
-        address = address | (memory[PC+2] << 8);
-        PC = address;
+        JMP();
+    }
+}
+
+void intel8080::CALL() {
+    memory[--SP] = PC+3;
+    JMP();
+}
+
+void intel8080::CC() {
+    if (getCarry()) {
+        CALL();
+    }
+}
+
+void intel8080::CNC() {
+    if (!getCarry()) {
+        CALL();
+    }
+}
+
+void intel8080::CZ() {
+    if (getZero()) {
+        CALL();
+    }
+}
+
+void intel8080::CNZ() {
+    if (!getZero()) {
+        CALL();
+    }
+}
+
+void intel8080::CM() {
+    if (getSign()) {
+        CALL();
+    }
+}
+
+void intel8080::CP() {
+    if (!getSign()) {
+        CALL();
+    }
+}
+
+void intel8080::CPE() {
+    if (getParity()) {
+        CALL();
+    }
+}
+
+void intel8080::CPO() {
+    if (!getParity()) {
+        CALL();
+    }
+}
+
+void intel8080::RET() {
+    PC = memory[SP++];
+}
+
+void intel8080::RC() {
+    if (getCarry()) {
+        RET();
+    }
+}
+
+void intel8080::RNC() {
+    if (!getCarry()) {
+        RET();
+    }
+}
+
+void intel8080::RZ() {
+    if (getZero()) {
+        RET();
+    }
+}
+
+void intel8080::RNZ() {
+    if (!getZero()) {
+        RET();
+    }
+}
+
+void intel8080::RM() {
+    if (getSign()) {
+        RET();
+    }
+}
+
+void intel8080::RP() {
+    if (!getSign()) {
+        RET();
+    }
+}
+
+void intel8080::RPE() {
+    if (getParity()) {
+        RET();
+    }
+}
+
+void intel8080::RPO() {
+    if (!getParity()) {
+        RET();
     }
 }
 
@@ -1106,8 +1188,6 @@ void intel8080::run() {
         execute(readByte(PC++));
     }
 }
-
-
 
 void intel8080::step() {
     execute(readByte(PC++));

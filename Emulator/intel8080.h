@@ -109,6 +109,24 @@ class intel8080 {
         void JP();
         void JPE();
         void JPO();
+        void CALL();
+        void CC();
+        void CNC();
+        void CZ();
+        void CNZ();
+        void CM();
+        void CP();
+        void CPE();
+        void CPO();
+        void RET();
+        void RC();
+        void RNC();
+        void RZ();
+        void RNZ();
+        void RM();
+        void RP();
+        void RPE();
+        void RPO();
 
     public:
         // constructor
