@@ -2,6 +2,7 @@ extern "C" {
 #include "../TestEmulator/i8080.h"
 }
 #include <iostream>
+#include <string>
 
 
 typedef unsigned char byte;
@@ -29,6 +30,9 @@ class intel8080 {
         bool getParity();
         void setCarry(bool val);
         bool getCarry();
+
+        // debug string
+        std::string error;
         
         // memory
         byte* memory;
@@ -144,6 +148,9 @@ class intel8080 {
         // run program
         void run();
         void step();
+
+        // status
+        bool IsHalted();
 
         // debug functions
         void printStats();

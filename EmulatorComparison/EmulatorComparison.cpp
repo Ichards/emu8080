@@ -13,6 +13,8 @@ void intel8080::printStats() {
     cout << "Flags" << endl;
     cout << "Sign: " << getSign() << " Zero: " << getZero() << " Parity: " << getParity() << endl;
     cout << "Carry: " << getCarry() << " Auxiliary Carry: " << getAuxCarry() << endl;
+    cout << "Halt: " << halt << endl;
+    cout << "Error msg: " << error << endl;
     cout << endl;
 }
 
@@ -26,6 +28,7 @@ void printi8080Stats(struct i8080 *cpu) {
     cout << "Flags" << endl;
     cout << "Sign: " << i8080_get_flag(cpu, FLAG_S) << " Zero: " << i8080_get_flag(cpu, FLAG_Z) << " Parity: " << i8080_get_flag(cpu, FLAG_P) << endl;
     cout << "Carry: " << i8080_get_flag(cpu, FLAG_C) << " Auxiliary Carry: " << i8080_get_flag(cpu, FLAG_A) << endl;
+    cout << "Halt: " << cpu->halted << endl;
     cout << endl;
 }
 
@@ -91,6 +94,9 @@ bool intel8080::compareCPU(i8080* testCpu) {
         cout << "MyCpu:\t" << (int)getCarry() << "\tTestCpu:\t" << i8080_get_flag(testCpu, FLAG_C) << endl;
         success = false;
     }
+    if (testCpu->halted != halt) {
+        cout << "Halt Status is different" << endl;
+    }
     return success;
 }
 
@@ -111,6 +117,9 @@ void testCPU(byte* program, int programSize) {
 
     bool success = true;
     for (int i=0; i<programSize; i++) {
+        if (testCpu->halted) {
+            break;
+        }
         i8080_step(testCpu);
         myCpu->step();
         if (!myCpu->compareCPU(testCpu)) {

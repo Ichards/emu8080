@@ -6,7 +6,7 @@ intel8080::intel8080(byte* p_memory, int p_memorySize)
 :
 halt(false), INTE(false),
 A(0), B(0), C(0), D(0), E(0), H(0), L(0), SP(0), PC(0),
-flags(0b00000010)
+flags(0b00000010), error("none")
 {
     memory = p_memory;
     memorySize = p_memorySize;
@@ -626,6 +626,9 @@ void intel8080::execute(byte opCode) {
 
         // HLT - HALT INSTRUCTION
         case 0b01110110: HLT(); break;
+
+        // UNKNOWN
+        default: halt = true; error = "unknown"; break;
     }
 }
 
@@ -1292,12 +1295,18 @@ void intel8080::HLT() {
     halt = true;
 }
 
+bool intel8080::IsHalted() {
+    return halt;
+}
+
 void intel8080::run() {
-    while (PC < memorySize) {
+    while (!halt) {
         execute(readByte(PC++));
     }
 }
 
 void intel8080::step() {
-    execute(readByte(PC++));
+    if (!halt) {
+        execute(readByte(PC++));
+    }
 }
