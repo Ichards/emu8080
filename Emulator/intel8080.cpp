@@ -442,21 +442,24 @@ void intel8080::execute(byte opCode) {
 
         // XCHG - Exchange Registers
         case 0b11101011:
-        word temp = getHL();
-        setHL(getDE());
-        setDE(temp);
-        break;
+        {
+            word temp = getHL();
+            setHL(getDE());
+            setDE(temp);
+        } break;
 
         // XTHL - Exchange Stack
         case 0b11100011:
-        L = memory[SP];
-        H = memory[SP+1];
-        break;
+        {
+            L = memory[SP];
+            H = memory[SP+1];
+        } break;
 
         // SPHL - Load SP From H And L
         case 0b11111001:
-        SP - getHL();
-        break;
+        {
+            SP - getHL();
+        } break;
 
         // IMMEDIATE INSTRUCTIONS
         // MVI - Move Immediate Data
@@ -721,10 +724,10 @@ bool intel8080::setCarry(byte value, byte operand) {
     return getCarry();
 }
 
-bool intel8080::setCarry(byte value, byte operand) {
+bool intel8080::setCarryWord(word value, word addend) {
     // cast value to higher bit count variable
-    unsigned long int bigValue = value;
-    bigValue += operand;
+    unsigned int bigValue = value;
+    bigValue += addend;
     setCarry(bigValue >> 16);
     return getCarry();
 }

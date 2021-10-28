@@ -1,5 +1,7 @@
 #include "../Emulator/intel8080.h"
 #include "i8080.h"
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -110,20 +112,20 @@ void testCPU(byte* program, int programSize) {
     i8080_reset(testCpu);
     for (int i=0; i<programSize; i++) {
         i8080_write_byte(testCpu, i, program[i]);
-        i8080_step(testCpu);
     }
 
     intel8080* myCpu = new intel8080(program, programSize);
 
     bool success = true;
     for (int i=0; i<programSize; i++) {
-        if (testCpu->halted) {
-            break;
-        }
         i8080_step(testCpu);
         myCpu->step();
         if (!myCpu->compareCPU(testCpu)) {
+            cout << "Break on instruction: " << (i + 1) << endl;
             success = false;
+            break;
+        }
+        if (testCpu->halted) {
             break;
         }
     }
@@ -140,6 +142,14 @@ void testCPU(byte* program, int programSize) {
 
 }
 
+// thinking about doing this fills me with dread
+void fillProgram(byte* program, int programSize) {
+    srand(time(NULL));
+    for (int i=0; i<programSize; i++) {
+        byte nextByte;
+        //while (nextByte )
+    }
+}
 
 int main() {
 
