@@ -56,3 +56,6 @@ notes on making random program generator:
   -limit jump calls
 
 
+problematic methods:
+  SUI
+  CPI

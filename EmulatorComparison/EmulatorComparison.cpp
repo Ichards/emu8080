@@ -2,6 +2,7 @@
 #include "i8080.h"
 #include <stdlib.h>
 #include <time.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -118,6 +119,7 @@ void testCPU(byte* program, int programSize) {
 
     bool success = true;
     for (int i=0; i<programSize; i++) {
+        cout << "Current instruction: " << hex << (unsigned int) program[i] << dec << endl;
         i8080_step(testCpu);
         myCpu->step();
         if (!myCpu->compareCPU(testCpu)) {
@@ -142,21 +144,72 @@ void testCPU(byte* program, int programSize) {
 
 }
 
-// thinking about doing this fills me with dread
-void fillProgram(byte* program, int programSize) {
-    srand(time(NULL));
-    for (int i=0; i<programSize; i++) {
-        byte nextByte;
-        //while (nextByte )
+bool opcodeIsValid(byte opCode) {
+    byte callMask = 0b11000110;
+    byte callResult = 0b11000100;
+    byte retMask = 0b11000110;
+    byte retResult = 0b11000000;
+    byte rstMask = 0b11000111;
+    byte rstResult = 0b11000111;
+    byte jumpMask = 0b11000110;
+    byte jumpResult = 0b11000010;
+
+    byte result = opCode & callMask;
+    if (result == callResult) {
+        return false;
     }
+    result = opCode & retMask;
+    if (result == retResult) {
+        return false;
+    }
+    result = opCode & jumpMask;
+    if (result == jumpResult) {
+        return false;
+    }
+    result = opCode & rstMask;
+    if (result == rstResult) {
+        return false;
+    }
+
+    if (opCode == 0b00000000) {
+        return false;
+    }
+
+    return true;
+}
+
+// thinking about doing this fills me with dread
+void fillProgram(byte* &program, int programSize) {
+
+    program = new byte[programSize];
+
+    for (int i=0; i<programSize; i++) {
+        byte nextByte = 0b00000000;
+        while (!opcodeIsValid(nextByte)) {
+            nextByte = rand() % 255;
+            cout << "Trying byte: " << hex << (int)nextByte << dec << endl;
+        }
+        cout << "Successfully input byte " << endl;
+        program[i] = nextByte;
+    }
+    cout << endl;
 }
 
 int main() {
 
-    byte program[] = {0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b10111000};
+    //byte program[] = {0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b00000100, 0b10111000};
 
-    int programSize = *(&program + 1) - program;
+    //int programSize = *(&program + 1) - program;
+    srand(time(NULL));
+
+
+    byte* program;
+    int programSize = 10;
+
+    fillProgram(program, programSize);
 
     testCPU(program, programSize);
+    
     return 0;
+
 }

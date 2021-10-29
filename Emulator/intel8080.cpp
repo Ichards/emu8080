@@ -329,13 +329,13 @@ void intel8080::execute(byte opCode) {
         // Register B
         case 0b10101000: XRA(B); break;
         // Register C
-        case 0b10101001: XRA(B); break;
+        case 0b10101001: XRA(C); break;
         // Register D
-        case 0b10101010: XRA(C); break;
+        case 0b10101010: XRA(D); break;
         // Register E
-        case 0b10101011: XRA(D); break;
+        case 0b10101011: XRA(E); break;
         // Register H
-        case 0b10101100: XRA(E); break;
+        case 0b10101100: XRA(H); break;
         // Register L
         case 0b10101101: XRA(L); break;
         // Register M
@@ -462,6 +462,16 @@ void intel8080::execute(byte opCode) {
         } break;
 
         // IMMEDIATE INSTRUCTIONS
+        // LXI - Long Move Immediate Data
+        // Registers BC
+        case 0b00000001: LXI(C, B); break;
+        // Registers DE
+        case 0b00010001: LXI(E, D); break;
+        // Registers HL
+        case 0b00100001: LXI(L, H); break;
+        // Registers SP
+        case 0b00110001: SP = memory[PC++] & (memory[PC++] << 8); break;
+
         // MVI - Move Immediate Data
         // Register B
         case 0b00000110: MVI(B); break;
@@ -631,7 +641,7 @@ void intel8080::execute(byte opCode) {
         case 0b01110110: HLT(); break;
 
         // UNKNOWN
-        default: halt = true; error = "unknown"; break;
+        default: error = "unknown"; break;
     }
 }
 
@@ -835,21 +845,24 @@ void intel8080::ADC(byte reg) {
     bool tempAuxCarry = false;
     bool tempCarry = false;
 
+    word temp;
+
     if (setAuxCarry(A, reg)) {
         tempAuxCarry = true;
     }
     if (setCarry(A, reg)) {
         tempCarry = true;
     }
-    A += reg;
+    temp = A + reg;
+    A = temp & 0xFF;
     if (setAuxCarry(A, getCarry())) {
         tempAuxCarry = true;
     }
     if (setCarry(A, getCarry())) {
         tempCarry = true;
     }
-    A += getCarry();
-    setSZP(A);
+    temp = A + getCarry();
+    A = temp & 0xFF;
     setAuxCarry(tempAuxCarry);
     setCarry(tempCarry);
 }
@@ -896,6 +909,7 @@ void intel8080::SBB(byte reg) {
 
 void intel8080::ANA(byte& reg) {
     setCarry(false);
+    setAuxCarry(false); // doesn't say in any documentation what to do with aux carry, lol
     A = reg & A;
     setSZP(A);
 }
@@ -910,17 +924,17 @@ void intel8080::XRA(byte& reg) {
 
 void intel8080::ORA(byte& reg) {
     setCarry(false);
+    setAuxCarry(false);
     A = reg | A;
     setSZP(A);
 }
 
 void intel8080::CMP(byte reg) {
-
     reg = (~reg) + 1;
 
     setSZP(A + reg);
-    setCarry(!setCarry(A, reg));
-    setAuxCarry(A, reg);
+    setCarry(A, reg);
+    setAuxCarry(!setAuxCarry(A, reg));
 }
 
 void intel8080::RLC() {
@@ -966,12 +980,17 @@ void intel8080::POP(byte& reg1, byte& reg2) {
 }
 
 void intel8080::DAD(word regs) {
-    setHL(getHL() + regs);
     setCarryWord(getHL(), regs);
+    setHL(getHL() + regs);
+}
+
+void intel8080::LXI(byte& reg1, byte& reg2) {
+    reg1 = memory[PC++];
+    reg2 = memory[PC++];
 }
 
 void intel8080::MVI(byte& reg) {
-    reg = memory[++PC];
+    reg = memory[PC++];
 }
 
 void intel8080::ADI() {
@@ -985,8 +1004,6 @@ void intel8080::ADI() {
 void intel8080::ACI() {
     bool tempAuxCarry = false;
     bool tempCarry = false;
-
-    PC++;
 
     if (setAuxCarry(A, memory[PC])) {
         tempAuxCarry = true;
@@ -1005,14 +1022,16 @@ void intel8080::ACI() {
     setSZP(A);
     setAuxCarry(tempAuxCarry);
     setCarry(tempCarry);
+    PC++;
 }
 
 void intel8080::SUI() {
-    PC++;
-    setCarry(A, (~memory[PC]) + 1);
-    setAuxCarry(A, (~memory[PC]) + 1);
-    A += (~memory[PC]) + 1;
+    byte temp = (~memory[PC]) + 1;
+    setCarry(A, temp);
+    setAuxCarry(A, temp);
+    A += temp;
     setSZP(A);
+    PC++;
 }
 
 void intel8080::SBI() {
@@ -1042,30 +1061,32 @@ void intel8080::SBI() {
 
 void intel8080::ANI() {
     setCarry(false);
+    setAuxCarry(false);
     A = A & memory[++PC];
     setSZP(A);
 }
 
 void intel8080::XRI() {
     setCarry(false);
+    setAuxCarry(false);
     A = A ^ memory[++PC];
     setSZP(A);
 }
 
 void intel8080::ORI() {
     setCarry(false);
-    A = A | memory[++PC];
+    setAuxCarry(false);
+    A = A | memory[PC++];
     setSZP(A);
 }
 
 void intel8080::CPI() {
-
     PC++;
-    byte temp = memory[PC] = (~memory[PC]) + 1;
+    byte temp = (~memory[PC]) + 1;
 
-    setSZP(A + memory[PC]);
-    setCarry(!setCarry(A, memory[PC]));
-    setAuxCarry(A, memory[PC]);
+    setSZP(A + temp);
+    setCarry(!setCarry(A, temp));
+    setAuxCarry(A, temp);
 }
 
 void intel8080::STA() {

@@ -90,6 +90,7 @@ class intel8080 {
         void PUSH(byte reg1, byte reg2);
         void POP(byte& reg1, byte& reg2);
         void DAD(word regs);
+        void LXI(byte& reg1, byte& reg2);
         void MVI(byte& reg);
         void ADI();
         void ACI();
